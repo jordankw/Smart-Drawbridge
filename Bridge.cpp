@@ -10,15 +10,26 @@ void Bridge::createBridge() {
 	position = osg::Vec3(0.0f, 0.0f, 0.0f);
 	transform = new osg::MatrixTransform(osg::Matrix::translate(position));
 
-	leftPivot = new osg::MatrixTransform(osg::Matrix::translate(osg::Vec3(-10.0f, 0.0f, 0.0f)));
-	rightPivot = new osg::MatrixTransform(osg::Matrix::translate(osg::Vec3(10.0f, 0.0f, 0.0f)));
+	//add pivot transforms
+	leftPivot = new osg::MatrixTransform(osg::Matrix::translate(osg::Vec3(-20.0f, 0.0f, 0.0f)));
+	rightPivot = new osg::MatrixTransform(osg::Matrix::translate(osg::Vec3(20.0f, 0.0f, 0.0f)));
 	transform->addChild(leftPivot);
 	transform->addChild(rightPivot);
 
+	//add bridge pieces
 	leftBridge = new osg::Geode();
 	rightBridge = new osg::Geode();
-	leftBridge->addDrawable(new osg::ShapeDrawable(new osg::Box(osg::Vec3(5.0f, 0.0f, 0.0f), 10.f, 2.f, 0.5f)));
-	rightBridge->addDrawable(new osg::ShapeDrawable(new osg::Box(osg::Vec3(-5.0f, 0.0f, 0.0f), 10.f, 2.f, 0.5f)));
+	leftBridge->addDrawable(new osg::ShapeDrawable(new osg::Box(osg::Vec3(10.0f, 0.0f, 0.0f), 20.f, 5.f, 0.5f)));
+	rightBridge->addDrawable(new osg::ShapeDrawable(new osg::Box(osg::Vec3(-10.0f, 0.0f, 0.0f), 20.f, 5.f, 0.5f)));
+
+	//add laser
+	rightBridge->addDrawable(new osg::ShapeDrawable(new osg::Box(osg::Vec3(-20.0f, -250.0f, 0.0f), 0.4f, 500.f, 0.4f)));
+
+	//add sides
+	osg::ref_ptr<osg::Geode> sides = new osg::Geode();
+	sides->addDrawable(new osg::ShapeDrawable(new osg::Box(osg::Vec3(45.0f, -250.0f, -10.0f), 50.0f, 1000.0f, 20.0f)));
+	sides->addDrawable(new osg::ShapeDrawable(new osg::Box(osg::Vec3(-45.0f, -250.0f, -10.0f), 50.0f, 1000.0f, 20.0f)));
+	transform->addChild(sides);
 
 	leftPivot->addChild(leftBridge);
 	rightPivot->addChild(rightBridge);
@@ -59,8 +70,8 @@ void Bridge::closeBridge() {
 	}
 }
 void Bridge::applyBridgeRotation(float angle) {
-	leftPivot->setMatrix(osg::Matrix::rotate(-angle, osg::Vec3(0.0, 1.0, 0.0)) * osg::Matrix::translate(osg::Vec3(-10.0f, 0.0f, 0.0f)));
-	rightPivot->setMatrix(osg::Matrix::rotate(angle, osg::Vec3(0.0, 1.0, 0.0)) * osg::Matrix::translate(osg::Vec3(10.0f, 0.0f, 0.0f)));
+	leftPivot->setMatrix(osg::Matrix::rotate(-angle, osg::Vec3(0.0, 1.0, 0.0)) * osg::Matrix::translate(osg::Vec3(-20.0f, 0.0f, 0.0f)));
+	rightPivot->setMatrix(osg::Matrix::rotate(angle, osg::Vec3(0.0, 1.0, 0.0)) * osg::Matrix::translate(osg::Vec3(20.0f, 0.0f, 0.0f)));
 }
 void Bridge::updatePosition(double timestep, Ship& s) {
 	float timeUntilShip = timeUntilShipArrives(s);

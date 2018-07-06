@@ -5,6 +5,8 @@
  *      Author: jordanw1
  */
 #include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
 #include <osg/ShapeDrawable>
 #include <osg/Geode>
 #include <osg/MatrixTransform>

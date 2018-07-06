@@ -12,78 +12,56 @@
 #include <osg/ShapeDrawable>
 #include <osg/Geode>
 #include <osgViewer/Viewer>
+#include <sys/time.h>
+//#include <chrono>
 
 #include "Ship.h"
 #include "Bridge.h"
 
-
-osg::Camera* createCamera(double left, double right, double bottom, double top) {
-
-	osg::ref_ptr<osg::Camera> camera = new osg::Camera;
-	camera->setReferenceFrame(osg::Transform::ABSOLUTE_RF);
-
-	camera->setClearMask(GL_DEPTH_BUFFER_BIT);
-	camera->setRenderOrder(osg::Camera::POST_RENDER);
-	camera->setAllowEventFocus(false);
-	camera->setProjectionMatrix(osg::Matrix::ortho2D(left, right, bottom, top));
-	camera->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF);
-
-
-	return camera.release();
-}
-osg::Group* createRoot() {
-	osg::ref_ptr<osg::Camera> cam = createCamera(0, 1000, 0, 1000);
-
-	//osg::ref_ptr<osg::Geode> geode = new osg::Geode;
-	//geode->addDrawable(new osg::ShapeDrawable(new osg::Box(osg::Vec3(-5.f, 3.0f, 0.0f), 1.0f)));
-	//geode->addDrawable(new osg::ShapeDrawable(new osg::Sphere(osg::Vec3(5.0f, 3.0f, 0.0f), 1.0f)));
-
-	osg::ref_ptr<osg::Group> root = new osg::Group;
-	root->addChild(cam.get());
-	//root->addChild(geode.get());
-
-	return root.release();
-}
 int main() {
-	//Declare variables
+	//for delta time calculation
+	timeval t1, t2;
+	gettimeofday(&t1, NULL);
+
+	//declare variables
 	Ship *s = new Ship();
 	Bridge *b = new Bridge();
-	float timestep = 0.04f;
+	osg::ref_ptr<osg::Group> root = new osg::Group;
 
-	//while (1) {
-
-		usleep(timestep * 1000000);
-	//}
-	osg::ref_ptr<osg::Group> root;
-	root = createRoot();
-
+	//set up root
 	root->addChild(b->getTransform());
 	root->addChild(s->getTransform());
 	osgViewer::Viewer viewer;
 	viewer.setSceneData(root);
 
-	viewer.setCameraManipulator(new osgGA::TrackballManipulator);
-	//viewer.getCamera()->
+	//create camera
+	osg::ref_ptr<osg::Camera> cam = new osg::Camera;
+	cam->setClearColor(osg::Vec4(0.2f, 0.2f, 0.2f, 1));
+	cam->setProjectionMatrixAsPerspective(30, 1.0, 0.1, 1000);
+	cam->setViewMatrixAsLookAt(osg::Vec3(0.f, -160.f, 700.f), osg::Vec3(0.0f, -160.0f, 0.0f), osg::Vec3(0.0f, -1.0f, 0.0f));
+	viewer.setCamera(cam);
+	//viewer.setUpViewInWindow(10, 10, 1000, 1000, 0);
+	//viewer.setCameraManipulator(new osgGA::TrackballManipulator);
 
-	viewer.setUpViewInWindow(10, 10, 1000, 1000, 0);
-
-	//return viewer.run();
 	viewer.realize();
+
+	//start main loop
 	while( !viewer.done() ){
+		gettimeofday(&t2, NULL);
+		double timestep = (t2.tv_sec - t1.tv_sec) * 1000.0;
+		timestep += (t2.tv_usec - t1.tv_usec) / 1000.0;
+		timestep /= 1000.0;
+
+		t1 = t2;
 		//Update bridge and ship
-				s->updateShip(timestep);
-				b->updatePosition(timestep, *s);
+			s->updateShip(timestep);
+			b->updatePosition(timestep, *s);
 
-				float timeUntilShip = b->timeUntilShipArrives(*s);
-				printf("ship position: %f, bridge angle: %f, time until ship arrives: %f\n", s->getPosition()[1], b->getBridgeAngle(), timeUntilShip);
-
+			float timeUntilShip = b->timeUntilShipArrives(*s);
+			printf("ship position: %f, ship velocity: %f, bridge angle: %f, time until ship arrives: %f\n", s->getPosition()[1], s->getVelocity()[1], b->getBridgeAngle(), timeUntilShip);
 
 		viewer.frame();
 	}
-
-
-
-
 	return 0;
 }
 
