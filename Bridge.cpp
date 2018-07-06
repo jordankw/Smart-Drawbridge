@@ -40,9 +40,9 @@ Bridge::Bridge() {
 	isOpen = false;
 	moving = false;
 	openAngle = 3.1415926535f / 4;
-	timeToOpen = 5.0f;
+	timeToOpen = 5.0f; //to calculate bridge opening rate
 	bridgeAngle = 0.f;
-	timeToClose = 10.f;
+	timeToClose = 10.f; //time to wait after ship passes before closing the bridge
 
 	createBridge();
 }
@@ -74,15 +74,14 @@ void Bridge::applyBridgeRotation(float angle) {
 	rightPivot->setMatrix(osg::Matrix::rotate(angle, osg::Vec3(0.0, 1.0, 0.0)) * osg::Matrix::translate(osg::Vec3(20.0f, 0.0f, 0.0f)));
 }
 void Bridge::updatePosition(double timestep, Ship& s) {
+	//if ship has passed, start counting down until closing the bridge
 	float timeUntilShip = timeUntilShipArrives(s);
 	if (timeUntilShip < 0) {
 		if (!s.isShipLeaving()) {
 			s.setShipLeaving();
 		}
-		//ship has passed
-
-
 	}
+	//otherwise, if the ship will arrive 10 seconds after opening the bridge, open the bridge
 	else if (timeUntilShip < (10 + timeToOpen)) {
 		if (isClosedOrClosing()) {
 			openBridge();
@@ -91,6 +90,7 @@ void Bridge::updatePosition(double timestep, Ship& s) {
 
 	switch (bs) {
 	case opening:
+		//check whether bridge is fully open. if it is, change bridge state to open
 		if (bridgeAngle >= openAngle) {
 			bridgeAngle = openAngle;
 			bs = open;
@@ -103,13 +103,13 @@ void Bridge::updatePosition(double timestep, Ship& s) {
 		else {
 			//Increase angle and rotate bridge pivot transforms
 			float incr = timestep * (openAngle / timeToOpen);
-			//bridgeAngle += 1.0f * (float)timestep;
 			bridgeAngle = bridgeAngle + incr;
 		}
 		//Update visualization
 		applyBridgeRotation(bridgeAngle);
 		break;
 	case closing:
+		//check whether bridge is fully closed. if it is, change bridge state to closed
 		if (bridgeAngle <= 0) {
 			bridgeAngle = 0;
 			bs = closed;
@@ -137,8 +137,8 @@ void Bridge::updatePosition(double timestep, Ship& s) {
 		break;
 	}
 
-
 }
+//calculate time until the leading edge of the ship passes the center of the bridge
 float Bridge::timeUntilShipArrives(Ship& s) {
 	float distanceInMeters = (position[1] - s.getYIntersectionPosition());
 
@@ -146,6 +146,5 @@ float Bridge::timeUntilShipArrives(Ship& s) {
 }
 
 osg::ref_ptr<osg::MatrixTransform> Bridge::getTransform() {
-	//return transform.release();
 	return transform;
 }
