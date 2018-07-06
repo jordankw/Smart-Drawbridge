@@ -5,6 +5,8 @@
  *      Author: jordanw1
  */
 #include <stdio.h>
+#include <osg/ShapeDrawable>
+#include <osg/Geode>
 #include <osg/MatrixTransform>
 #ifndef SHIP_H_
 #define SHIP_H_
@@ -16,15 +18,10 @@ private:
 	osg::ref_ptr<osg::MatrixTransform> transform;
 	enum ShipState { approaching, leaving };
 	ShipState ss;
+	osg::ref_ptr<osg::Geode> shipBox;
 
-	void createShip() {
-		ss = approaching;
-		position = osg::Vec3(0.0f, -500.0f, 0.0f);
-		//random velocity in y direction between 10 and 30 m/s
-		velocity = osg::Vec3(0.0f, 30.0f, 0.0f);
-		dimensions = osg::Vec3(4.0f, 10.0f, 4.0f);
-		transform = new osg::MatrixTransform(osg::Matrix::translate(position));
-	}
+	void createShip();
+
 public:
 	Ship() {
 		createShip();
